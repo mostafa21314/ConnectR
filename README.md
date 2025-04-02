@@ -15,7 +15,7 @@ To run this project locally, follow these steps:
 1. Ensure you have [Node.js](https://nodejs.org/) and npm installed on your system.
 2. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/ConnectR.git
+    git clone https://github.com/mostafa21314/ConnectR
     ```
 3. Navigate to the project directory:
     ```bash
