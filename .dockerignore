@@ -1,0 +1,15 @@
+# Frontend
+FrontEnd/node_modules
+FrontEnd/build
+
+# Backend
+BackEnd/__pycache__
+BackEnd/*.pyc
+BackEnd/*.pyo
+BackEnd/*.pyd
+BackEnd/.Python
+BackEnd/db.sqlite3
+
+# General
+.git
+.gitignore

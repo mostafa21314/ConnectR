@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  frontend:
+    build: ./FrontEnd
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./FrontEnd:/app
+      - /app/node_modules
+
+  backend:
+    build: ./BackEnd
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./BackEnd:/app
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=project_db
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=CBT21314
+
+volumes:
+  postgres_data:
