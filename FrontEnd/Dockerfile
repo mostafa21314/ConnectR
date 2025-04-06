@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Install react-icons specifically
+RUN npm install react-icons --save
+
 # Copy the rest of your application files
 COPY . .
 

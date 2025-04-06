@@ -8,6 +8,11 @@ services:
     volumes:
       - ./FrontEnd:/app
       - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    command: sh -c "npm install react-icons && npm run dev"
 
   backend:
     build: ./BackEnd

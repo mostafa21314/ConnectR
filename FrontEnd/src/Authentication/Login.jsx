@@ -28,8 +28,8 @@ const LoginPage = () => {
         <div className="w-full max-w-md">
           {/* Logo and Tagline */}
           <div className="mb-10">
-            <h1 className="text-6xl text-center font-bold text-blue-900 ">CONNECTR</h1>
-            <p className="text-sm font-bold text-blue-950 mt-2 text-center">FIND JOBS THAT MATCH YOUR SKILLS</p>
+            <h1 className="text-6xl text-center font-bold text-blue-900 ">ConnectR</h1>
+            <p className="text-sm font-bold text-blue-950 mt-2 text-center">Effortless HR Skill Matching for Top Talent</p>
           </div>
 
           {/* Login Form */}
