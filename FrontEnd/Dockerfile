@@ -9,6 +9,8 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
+RUN npm install axios
+
 
 # Install react-icons specifically
 RUN npm install react-icons --save

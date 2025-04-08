@@ -1,35 +1,100 @@
 import React, { useState } from 'react';
 import { FaPlus, FaFileUpload, FaPlay, FaUser, FaFileAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from "axios";
+
 
 const ResumeParser = () => {
   const [files, setFiles] = useState([]);
   const [parsedResumes, setParsedResumes] = useState([]);
   const [isParsing, setIsParsing] = useState(false);
 
+
+
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    console.log("Files selected:", selectedFiles);
+    
+    if (selectedFiles.length === 0) return;
+    
+    // Add files to state immediately for better UI feedback
     setFiles(prev => [...prev, ...selectedFiles]);
+    
+    // Then upload in the background
+    selectedFiles.forEach(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        // For testing/development - if your API isn't ready yet, comment this out
+        console.log(`Attempting to upload ${file.name}`);
+        const response = await axios({
+          method: 'post',
+          url: '/api/upload-resume',
+          data: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        console.log(`Successfully uploaded ${file.name}:`, response);
+        
+        // Note: We already added the file to state above, so no need to do it again
+      } catch (err) {
+        console.error(`Error uploading ${file.name}:`, err);
+        // Remove the file from state if upload failed
+        // setFiles(prev => prev.filter(f => f !== file));
+        
+        // Alternatively, show an error message to the user
+        alert(`Failed to upload ${file.name}. Please try again.`);
+      }
+    });
   };
 
-  const handleStartParsing = () => {
-    if (files.length === 0) return;
-    
-    setIsParsing(true);
-    
-    // Simulate backend parsing
-    setTimeout(() => {
-      const parsed = files.map((file, index) => ({
-        id: index,
-        name: file.name,
-        skills: ['JavaScript', 'React', 'Node.js', 'CSS', 'HTML'].slice(0, Math.floor(Math.random() * 5) + 1),
-        experience: Math.floor(Math.random() * 5) + 1 + ' years'
-      }));
+const handleStartParsing = async () => {
+  if (files.length === 0) return;
+  
+  setIsParsing(true);
+  
+  try {
+    const results = await Promise.all(files.map(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
       
-      setParsedResumes(parsed);
-      setIsParsing(false);
-    }, 2000);
-  };
+      try {
+        const response = await axios({
+          method: 'post',
+          url: '/api/parse-resume', // This will be your backend endpoint
+          data: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        return {
+          id: Date.now() + Math.random(),
+          name: file.name,
+          ...response.data
+        };
+      } catch (err) {
+        console.error(`Error parsing ${file.name}:`, err);
+        return {
+          id: Date.now() + Math.random(),
+          name: file.name,
+          error: 'Failed to parse resume'
+        };
+      }
+    }));
+    
+    setParsedResumes(results);
+  } catch (err) {
+    console.error('Parsing error:', err);
+  } finally {
+    setIsParsing(false);
+  }
+};
+
+
 
   return (
     <div className="flex h-screen bg-gray-100">

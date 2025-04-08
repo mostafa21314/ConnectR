@@ -37,9 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'resume_parser',  # Add your app name here
+
+    
 ]
 
 MIDDLEWARE = [
+    
+    'corsheaders.middleware.CorsMiddleware',  # This should be at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -48,6 +54,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# Allow requests from your frontend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Your React app's URL
+]
+
+
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'connectr-backend-1',
+    'connectr-backend-1:8000'  # You might need this one too
+]
+
 
 ROOT_URLCONF = 'Backend.urls'
 
@@ -116,6 +138,16 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
+# Add this to your existing settings
+RESUME_PARSER_API_KEY = os.environ.get('VITE_APP_RESUME_PARSER_API_KEY')
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -123,5 +155,8 @@ STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
