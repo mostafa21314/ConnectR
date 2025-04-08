@@ -51,49 +51,56 @@ const ResumeParser = () => {
     });
   };
 
-const handleStartParsing = async () => {
-  if (files.length === 0) return;
+  const handleStartParsing = async () => {
+    if (files.length === 0) return;
   
-  setIsParsing(true);
+    setIsParsing(true);
   
-  try {
-    const results = await Promise.all(files.map(async (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      try {
-        const response = await axios({
-          method: 'post',
-          url: '/api/parse-resume', // This will be your backend endpoint
-          data: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        
-        return {
-          id: Date.now() + Math.random(),
-          name: file.name,
-          ...response.data
-        };
-      } catch (err) {
-        console.error(`Error parsing ${file.name}:`, err);
-        return {
-          id: Date.now() + Math.random(),
-          name: file.name,
-          error: 'Failed to parse resume'
-        };
-      }
-    }));
-    
-    setParsedResumes(results);
-  } catch (err) {
-    console.error('Parsing error:', err);
-  } finally {
-    setIsParsing(false);
-  }
-};
-
+    try {
+      const results = await Promise.all(files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+  
+        try {
+          const response = await axios({
+            method: 'post',
+            url: '/api/parse-resume',
+            data: formData,
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+  
+          return {
+            id: Date.now() + Math.random(),
+            name: file.name,
+            experience: Array.isArray(response.data.experience) ? response.data.experience : [], // Keep as array
+            skills: Array.isArray(response.data.skills) ? response.data.skills : []
+          };
+        } catch (err) {
+          console.error(`Error parsing ${file.name}:`, err);
+          return {
+            id: Date.now() + Math.random(),
+            name: file.name,
+            error: err.response?.data?.error || 'Failed to parse resume',
+            experience: [],
+            skills: []
+          };
+        }
+      }));
+  
+      setParsedResumes(results);
+    } catch (err) {
+      console.error('Unexpected parsing error:', err);
+      setParsedResumes(files.map(file => ({
+        id: Date.now() + Math.random(),
+        name: file.name,
+        error: 'Unexpected error occurred',
+        experience: [],
+        skills: []
+      })));
+    } finally {
+      setIsParsing(false);
+    }
+  };
 
 
   return (
@@ -188,33 +195,62 @@ const handleStartParsing = async () => {
 
           {/* Parsed Results */}
           {parsedResumes.length > 0 && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-lg font-semibold">Parsed Results</h2>
-              </div>
-              <div className="divide-y">
-                {parsedResumes.map((resume) => (
-                  <div key={resume.id} className="p-6">
-                    <h3 className="font-medium text-lg mb-2">{resume.name}</h3>
-                    <div className="mb-2">
-                      <span className="text-sm font-medium text-gray-500">Experience:</span>
-                      <span className="ml-2">{resume.experience}</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-500">Skills:</span>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {resume.skills.map((skill, index) => (
-                          <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            {skill}
+  <div className="bg-white rounded-lg shadow">
+    <div className="px-6 py-4 border-b">
+      <h2 className="text-lg font-semibold">Parsed Results</h2>
+    </div>
+    <div className="divide-y">
+      {parsedResumes.map((resume) => (
+        <div key={resume.id} className="p-6">
+          <h3 className="font-medium text-lg mb-2">{resume.name}</h3>
+          {resume.error ? (
+            <p className="text-red-500">{resume.error}</p>
+          ) : (
+            <>
+              <div className="mb-2">
+                <span className="text-sm font-medium text-gray-500">Experience:</span>
+                <div className="ml-2 mt-1">
+                  {resume.experience.length > 0 ? (
+                    resume.experience.map((exp, index) => (
+                      <div key={index} className="mb-1">
+                        <span className="font-medium">{exp.title}</span>
+                        {exp.organization && <span> at {exp.organization}</span>}
+                        {exp.location && <span> - {exp.location}</span>}
+                        {(exp.dates || exp.date_start) && (
+                          <span className="text-gray-600">
+                            {' ('}
+                            {exp.dates ? exp.dates.join(' - ') : `${exp.date_start} - ${exp.date_end || 'Present'}`}
+                            {')'}
                           </span>
-                        ))}
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                  ) : (
+                    <span className="text-gray-500">No experience found</span>
+                  )}
+                </div>
               </div>
-            </div>
+              <div>
+                <span className="text-sm font-medium text-gray-500">Skills:</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {resume.skills.length > 0 ? (
+                    resume.skills.map((skill, index) => (
+                      <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">No skills found</span>
+                  )}
+                </div>
+              </div>
+            </>
           )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
         </main>
       </div>
     </div>
