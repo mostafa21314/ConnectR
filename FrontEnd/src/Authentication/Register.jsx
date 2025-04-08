@@ -1,28 +1,55 @@
 import React, { useState } from 'react';
 import officeWorkerImage from '../assets/LoginHuman.jpeg';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { registerUser } from '../Services/authService.jsx'; // Import your registration function
+
 const Register = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    username: '',
+    username: '', // You are using this in your service
     password: '',
     confirmPassword: '',
-    agreeTerms: false
+    agreeTerms: false,
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Add a loading state
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log(formData);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true); // Start loading
+
+    try {
+      const user = await registerUser(
+        formData.email,
+        formData.password,
+        formData.fullName,
+        formData.username // Include the username
+      );
+
+      console.log('Registration successful:', user);
+      setLoading(false); // Stop loading
+      navigate('/login'); // Redirect on success
+    } catch (error) {
+      console.error('Registration failed:', error);
+      setError(error.message || 'Registration failed. Please try again.');
+      setLoading(false); // Stop loading even on error
+    }
   };
 
   return (
@@ -33,8 +60,12 @@ const Register = () => {
           {/* Logo and Tagline */}
           <div className="mb-10">
             <h1 className="text-6xl text-center font-bold text-blue-900">ConnectR</h1>
-            <p className="text-sm font-bold text-blue-950 mt-2 text-center">Effortless HR Skill Matching for Top Talent</p>
+            <p className="text-sm font-bold text-blue-950 mt-2 text-center">
+              Effortless HR Skill Matching for Top Talent
+            </p>
           </div>
+
+          {error && <p className="text-red-500 mb-4">{error}</p>}
 
           {/* Registration Form */}
           <form onSubmit={handleSubmit}>
@@ -132,16 +163,17 @@ const Register = () => {
             {/* Register Button */}
             <button
               type="submit"
-              className="w-full bg-blue-900 hover:bg-blue-900 text-white py-3 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full bg-blue-900 hover:bg-blue-900 text-white py-3 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
             >
-              Register Now
+              {loading ? 'Registering...' : 'Register Now'}
             </button>
 
             {/* Login Link */}
             <div className="text-center mt-8 text-sm text-gray-600">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link to="/login" className="text-blue-800 hover:underline">
-                  Log in
+                Log in
               </Link>
             </div>
           </form>
@@ -150,11 +182,7 @@ const Register = () => {
 
       {/* Right side - Image */}
       <div className="w-1/2 h-full overflow-hidden">
-        <img
-          src={officeWorkerImage} 
-          alt="Office worker at computers"
-          className="w-full h-full object-cover"
-        />
+        <img src={officeWorkerImage} alt="Office worker at computers" className="w-full h-full object-cover" />
       </div>
     </div>
   );
