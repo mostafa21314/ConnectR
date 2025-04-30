@@ -26,5 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/parse-resume', views.parse_resume, name='parse_resume'),
     path('', include('resume_parser.urls')),
-
+    path('api/jobs/', include('jobs.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
