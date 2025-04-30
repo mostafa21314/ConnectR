@@ -11,9 +11,9 @@ COPY package*.json ./
 RUN npm install
 RUN npm install axios
 
-
-# Install react-icons specifically
+# Install specific packages
 RUN npm install react-icons --save
+RUN npm install react-dropzone --save
 
 # Copy the rest of your application files
 COPY . .

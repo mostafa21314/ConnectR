@@ -1,18 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaPlus, FaEye, FaUser, FaFileAlt, FaChartBar, FaBriefcase, FaFileUpload } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Routes, Route } from 'react-router-dom';
+import JobDashboard from '../Jobs/JobDashboard';
+import CreateJob from '../Jobs/CreateJob';
+import JobsList from '../Jobs/JobsList';
+import JobDetails from '../Jobs/JobDetails';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [currentSection, setCurrentSection] = useState('jobs');
 
   const handleCreateJob = () => {
-    console.log("Create job clicked");
-    // navigate('/create-job');
+    navigate('/dashboard/jobs/create');
   };
 
   const handleViewPostings = () => {
-    console.log("View postings clicked");
-    // navigate('/job-postings');
+    navigate('/dashboard/jobs/postings');
   };
 
   return (
@@ -23,14 +26,43 @@ const Dashboard = () => {
           <h1 className="text-xl font-bold">ConnectR</h1>
         </div>
         <nav className="mt-6">
-          <SidebarItem icon={<FaBriefcase />} text="Jobs" active />
-          <SidebarItem icon={<FaUser />} text="Applicants" />
-          <Link to="/dashboard/resume-parser" className="
-          flex items-center px-6 py-3 text-gray-300 hover:bg-blue-800 hover:text-white">
+          <SidebarItem 
+            icon={<FaBriefcase />} 
+            text="Jobs" 
+            active={currentSection === 'jobs'} 
+            onClick={() => {
+              setCurrentSection('jobs');
+              navigate('/dashboard/jobs');
+            }}
+          />
+          <SidebarItem 
+            icon={<FaUser />} 
+            text="Applicants" 
+            active={currentSection === 'applicants'}
+            onClick={() => {
+              setCurrentSection('applicants');
+              navigate('/dashboard/applicants');
+            }}
+          />
+          <Link 
+            to="/dashboard/resume-parser" 
+            className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-800 hover:text-white ${
+              currentSection === 'parser' ? 'bg-blue-800 text-white' : ''
+            }`}
+            onClick={() => setCurrentSection('parser')}
+          >
             <span className="mr-3"><FaFileUpload /></span>
             <span>Resume Parser</span>
-            </Link>
-          <SidebarItem icon={<FaChartBar />} text="Analytics" />
+          </Link>
+          <SidebarItem 
+            icon={<FaChartBar />} 
+            text="Analytics" 
+            active={currentSection === 'analytics'}
+            onClick={() => {
+              setCurrentSection('analytics');
+              navigate('/dashboard/analytics');
+            }}
+          />
         </nav>
       </div>
 
@@ -64,50 +96,29 @@ const Dashboard = () => {
         </header>
 
         <main className="p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-6 mb-6">
-            <StatCard 
-              title="Active Jobs" 
-              value="--" 
-            />
-            <StatCard 
-              title="Total Applicants" 
-              value="--" 
-            />
-            <StatCard 
-              title="Acceptance Rate" 
-              value="--%"
-            />
-          </div>
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              <ActivityItem 
-                avatar={<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500"><FaUser /></div>}
-                title="New application received"
-                subtitle="Senior Developer Position"
-                time="2h ago"
-              />
-            </div>
-          </div>
+          <Routes>
+            <Route path="jobs" element={<JobDashboard />} />
+            <Route path="jobs/create" element={<CreateJob />} />
+            <Route path="jobs/postings" element={<JobsList />} />
+            <Route path="jobs/:jobId" element={<JobDetails />} />
+            <Route path="applicants" element={<div>Applicants Section</div>} />
+            <Route path="analytics" element={<div>Analytics Section</div>} />
+            <Route index element={<JobDashboard />} />
+          </Routes>
         </main>
       </div>
     </div>
   );
 };
 
-const SidebarItem = ({ icon, text, active }) => {
-  const handleClick = (e) => {
-    e.preventDefault();
-    console.log(`${text} clicked`);
-    // Add navigation logic here
-  };
-
+const SidebarItem = ({ icon, text, active, onClick }) => {
   return (
     <a 
       href="#" 
-      onClick={handleClick}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
       className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-800 hover:text-white ${active ? 'bg-blue-800 text-white' : ''}`}
     >
       <span className="mr-3">{icon}</span>
