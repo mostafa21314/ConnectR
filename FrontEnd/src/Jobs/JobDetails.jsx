@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import { getJobDetails } from '../Services/jobService';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -9,26 +10,17 @@ const JobDetails = () => {
   const [resumes, setResumes] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        // Mock data for now
-        const mockJob = {
-          id: jobId,
-          title: 'Senior Software Engineer',
-          company: 'Tech Corp',
-          description: 'We are looking for a skilled Senior Software Engineer to join our team...',
-          requiredSkills: ['JavaScript', 'React', 'Node.js', 'AWS'],
-          preferredSkills: ['TypeScript', 'Docker', 'CI/CD'],
-          experience: '5+ years',
-          location: 'Remote',
-          salary: '$120,000 - $150,000'
-        };
-        setJob(mockJob);
-        setLoading(false);
+        const jobData = await getJobDetails(jobId);
+        setJob(jobData);
       } catch (error) {
         console.error('Error fetching job details:', error);
+        setError(error.message || 'Failed to fetch job details');
+      } finally {
         setLoading(false);
       }
     };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createJob } from '../Services/jobService';
 
 const CreateJob = () => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const CreateJob = () => {
     experience: '',
     salary: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,6 +27,9 @@ const CreateJob = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
+    setError('');
+    setLoading(true);
     
     // Convert skills strings to arrays
     const jobData = {
@@ -32,16 +38,18 @@ const CreateJob = () => {
       preferredSkills: formData.preferredSkills.split(',').map(skill => skill.trim())
     };
 
+    console.log('Submitting job data:', jobData);
+
     try {
-      // TODO: Replace with actual API call
-      console.log('Submitting job data:', jobData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to jobs list within dashboard
+      console.log('Calling createJob service...');
+      const response = await createJob(jobData);
+      console.log('Job created successfully:', response);
       navigate('/dashboard/jobs/postings');
     } catch (error) {
       console.error('Error creating job:', error);
+      setError(error.message || 'Failed to create job listing');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,6 +58,12 @@ const CreateJob = () => {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Create New Job Listing</h1>
         
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6">
           <div className="space-y-6">
             <div>
@@ -176,9 +190,12 @@ const CreateJob = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                disabled={loading}
+                className={`px-4 py-2 text-white rounded-md ${
+                  loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                }`}
               >
-                Create Job Listing
+                {loading ? 'Creating...' : 'Create Job Listing'}
               </button>
             </div>
           </div>
