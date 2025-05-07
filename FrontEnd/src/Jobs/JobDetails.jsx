@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { getJobDetails } from '../Services/jobService';
+import axios from 'axios';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -74,23 +75,56 @@ const JobDetails = () => {
             r.id === resume.id ? { ...r, status: 'processing' } : r
           ));
 
-          // Mock API call for resume processing
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          // Create form data for the resume file
+          const formData = new FormData();
+          formData.append('file', resume.file);
 
-          // Mock response
-          const mockResult = {
-            matchingSkills: ['JavaScript', 'React'],
-            missingSkills: ['AWS', 'Node.js'],
-            matchingScore: Math.floor(Math.random() * 40) + 60, // Random score between 60-100
-          };
+          // Call the resume parsing API
+          const response = await axios({
+            method: 'post',
+            url: '/api/parse-resume',
+            data: formData,
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+
+          const parsedData = response.data;
+          const parsedSkills = parsedData.skills || [];
+
+          // Calculate matching score based on required and preferred skills
+          const requiredSkills = job.requiredSkills || [];
+          const preferredSkills = job.preferredSkills || [];
+          
+          // Calculate matches
+          const matchingRequiredSkills = requiredSkills.filter(skill => 
+            parsedSkills.some(parsedSkill => 
+              parsedSkill.toLowerCase().includes(skill.toLowerCase())
+            )
+          );
+          
+          const matchingPreferredSkills = preferredSkills.filter(skill => 
+            parsedSkills.some(parsedSkill => 
+              parsedSkill.toLowerCase().includes(skill.toLowerCase())
+            )
+          );
+
+          // Calculate score (70% weight for required skills, 30% for preferred)
+          const requiredScore = (matchingRequiredSkills.length / requiredSkills.length) * 70;
+          const preferredScore = (matchingPreferredSkills.length / preferredSkills.length) * 30;
+          const totalScore = Math.round(requiredScore + preferredScore);
+
+          // Get missing skills
+          const missingRequiredSkills = requiredSkills.filter(skill => 
+            !matchingRequiredSkills.includes(skill)
+          );
 
           setResumes(prev => prev.map(r => 
             r.id === resume.id ? {
               ...r,
               status: 'completed',
-              matchingScore: mockResult.matchingScore,
-              matchingSkills: mockResult.matchingSkills,
-              missingSkills: mockResult.missingSkills,
+              matchingScore: totalScore,
+              matchingSkills: [...matchingRequiredSkills, ...matchingPreferredSkills],
+              missingSkills: missingRequiredSkills,
+              parsedData: parsedData,
               progress: 100
             } : r
           ));
@@ -293,6 +327,43 @@ const JobDetails = () => {
                             </span>
                           ))}
                         </div>
+                        
+                        {/* Experience Section */}
+                        {resume.parsedData?.experience?.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Experience</h4>
+                            <div className="space-y-2">
+                              {resume.parsedData.experience.map((exp, index) => (
+                                <div key={index} className="text-sm">
+                                  <div className="font-medium">{exp.title}</div>
+                                  {exp.organization && (
+                                    <div className="text-gray-600">{exp.organization}</div>
+                                  )}
+                                  {exp.dates && (
+                                    <div className="text-gray-500 text-xs">{exp.dates}</div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Education Section */}
+                        {resume.parsedData?.education?.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Education</h4>
+                            <div className="space-y-2">
+                              {resume.parsedData.education.map((edu, index) => (
+                                <div key={index} className="text-sm">
+                                  <div className="font-medium">{edu.name}</div>
+                                  {edu.dates && (
+                                    <div className="text-gray-500 text-xs">{edu.dates}</div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
