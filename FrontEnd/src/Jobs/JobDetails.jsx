@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { getJobDetails } from '../Services/jobService';
 import axios from 'axios';
+import InterviewQuestions from './InterviewQuestions';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -12,6 +13,8 @@ const JobDetails = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
   const [error, setError] = useState(null);
+  const [showInterviewQuestions, setShowInterviewQuestions] = useState(false);
+  const [selectedResume, setSelectedResume] = useState(null);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -308,6 +311,17 @@ const JobDetails = () => {
                           <span className="text-sm font-medium">
                             {resume.matchingScore}% match
                           </span>
+                          {resume.matchingScore >= 70 && (
+                            <button
+                              onClick={() => {
+                                setSelectedResume(resume);
+                                setShowInterviewQuestions(true);
+                              }}
+                              className="ml-4 px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600"
+                            >
+                              Generate Interview Questions
+                            </button>
+                          )}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {resume.matchingSkills.map((skill, index) => (
@@ -387,6 +401,15 @@ const JobDetails = () => {
           </div>
         </div>
       </div>
+      {showInterviewQuestions && (
+        <InterviewQuestions
+          isOpen={showInterviewQuestions}
+          onClose={() => {
+            setShowInterviewQuestions(false);
+            setSelectedResume(null);
+          }}
+        />
+      )}
     </div>
   );
 };
