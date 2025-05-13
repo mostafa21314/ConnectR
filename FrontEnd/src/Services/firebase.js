@@ -55,3 +55,46 @@ const db = getFirestore(app);
 // Export the services
 export { auth, db };
 export default app;
+
+const handleGithubSignIn = async () => {
+  try {
+    setError('');
+    setLoading(true);
+
+    // Add scopes explicitly
+    const provider = new GithubAuthProvider();
+    provider.addScope('user:email'); // Request user's email
+
+    const user = await signInWithGithub();
+    console.log('GitHub sign-in successful:', user);
+    setLoading(false);
+    navigate('/dashboard');
+  } catch (err) {
+    console.error('GitHub sign-in failed:', err);
+    // Show more detailed error message
+    setError(`GitHub sign-in failed: ${err.message || 'Unknown error'}`);
+    setLoading(false);
+  }
+};
+
+const handleFacebookSignIn = async () => {
+  try {
+    setError('');
+    setLoading(true);
+
+    // Add permissions explicitly
+    const provider = new FacebookAuthProvider();
+    provider.addScope('email');
+    provider.addScope('public_profile');
+
+    const user = await signInWithFacebook();
+    console.log('Facebook sign-in successful:', user);
+    setLoading(false);
+    navigate('/dashboard');
+  } catch (err) {
+    console.error('Facebook sign-in failed:', err);
+    // Show more detailed error message
+    setError(`Facebook sign-in failed: ${err.message || 'Unknown error'}`);
+    setLoading(false);
+  }
+};

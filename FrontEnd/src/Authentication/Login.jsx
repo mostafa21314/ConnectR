@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import officeWorkerImage from '../assets/LoginHuman.jpeg'; // Replace with your image path
 import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import { loginUser } from '../Services/authService.jsx';
+import { loginUser, signInWithGoogle } from '../Services/authService.jsx';
+import { FaGoogle } from 'react-icons/fa';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -25,6 +26,21 @@ const LoginPage = () => {
     } catch (err) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid username or password');
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      const user = await signInWithGoogle();
+      console.log('Google sign-in successful:', user);
+      setLoading(false);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Google sign-in failed:', err);
+      setError(err.message || 'Failed to sign in with Google');
       setLoading(false);
     }
   };
@@ -107,6 +123,26 @@ const LoginPage = () => {
             >
               {loading ? 'Logging In...' : 'Login Now'}
             </button>
+
+            {/* OR Divider */}
+            <div className="flex items-center my-4">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <div className="px-3 text-sm text-gray-500">OR</div>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+
+            {/* Social Login Buttons - Only Google */}
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full flex items-center justify-center bg-white border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <FaGoogle className="text-red-400 mr-2" />
+                <span>Continue with Google</span>
+              </button>
+            </div>
 
             {/* Sign Up Link */}
             <div className="text-center mt-8 text-sm text-gray-600">

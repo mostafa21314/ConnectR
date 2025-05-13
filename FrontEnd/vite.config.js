@@ -7,13 +7,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: 5300,
     strictPort: true,
     proxy: {
       '/api': {
         target: 'http://connectr-backend-1:8000',  // Your Django server URL
         changeOrigin: true,
-        secure: false,
+        secure: true,
       }
     }
   },
